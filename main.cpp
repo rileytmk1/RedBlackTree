@@ -13,11 +13,13 @@ struct rbnode{
   int data;
 };
 
+//rotate functions created with help of psuedo code from https://www.youtube.com/playlist?list=PL9xmBV_5YoZNqDI8qfOZgzbqahCUmUEin
+
 void add(rbnode* &root, rbnode* &r, rbnode* parent, int value);
 void print(rbnode* &root, int depth);
 void fixTree(rbnode* &r, rbnode* node);
-void leftRotate();
-void rightRotate();
+void leftRotate(rbnode* &root, rbnode* n);
+void rightRotate(rbnode* &root, rbnode* n);
 
 int main()
 {
@@ -94,10 +96,53 @@ void print(rbnode* &root, int depth = 0){
   print(root->left, depth + 1);
 }
 
+void leftRotate(rbnode* &root, rbnode* x)
+{
+  rbnode* y = x->right;
+  x->right = y->left; // y's left subtree becomes x's right subtree
+  if (y->left != NULL){
+    y->left->parent = x;
+  }
+  y->parent = x->parent;
+  if (x->parent == NULL){
+    root = y;
+  }
+  else if (x == x->parent->left){
+    x->parent->left = y;
+  }
+  else{
+    x->parent->right = y;
+  }
+  y->left = x;
+  x->parent = y;
+}
+
+void rightRotate(rbnode* &root, rbnode* y)
+{
+  rbnode* x = y->left;
+  y->left = x->right;
+  if(x->right != NULL){
+    x->right->parent = y;
+  }
+  x->parent = y->parent;
+  if(y->parent == NULL){
+    root = x;
+  }
+  else if (y == y->parent->left){
+    y->parent->right = x;
+  }
+  x->right = y;
+  y->parent = x;
+}
+
 void fixTree(rbnode* &r, rbnode* node)
 {
   if (node == r){
     node->color = 1;
+  }
+
+  while (node->parent != NULL && node->parent->color == 0){
+    rbnode
   }
   /*
   else if (node->parent->color == 0){
