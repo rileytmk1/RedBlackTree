@@ -13,7 +13,8 @@ struct rbnode{
   int data;
 };
 
-//fix and rotate functions created with help of psuedo code from https://www.youtube.com/playlist?list=PL9xmBV_5YoZNqDI8qfOZgzbqahCUmUEin
+// fix and rotate functions created with help of psuedo code from https://www.youtube.com/playlist?list=PL9xmBV_5YoZNqDI8qfOZgzbqahCUmUEin
+// and https://www.youtube.com/watch?v=5IBxA-bZZH8&list=PL9xmBV_5YoZNqDI8qfOZgzbqahCUmUEin&index=3 (from resources listed on canvas)
 
 //function prototypes
 void add(rbnode* &root, rbnode* &r, rbnode* parent, int value);
