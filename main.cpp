@@ -22,6 +22,7 @@ void print(rbnode* &root, int depth);
 void fixTree(rbnode* &r, rbnode* node);
 void leftRotate(rbnode* &root, rbnode* n);
 void rightRotate(rbnode* &root, rbnode* n);
+void search(rbnode* &root, int num);
 
 int main()
 {
@@ -29,7 +30,7 @@ int main()
   rbnode* root = NULL;
   char input[10];
   while (strcmp(input, "QUIT") != 0){
-    cout << "ADD, PRINT, or QUIT: ";
+    cout << "ADD, PRINT, SEARCH, or QUIT: ";
     cin.get(input,10);
     cin.get();
     if (strcmp(input, "ADD") == 0){
@@ -56,6 +57,14 @@ int main()
     }
     else if (strcmp(input, "PRINT") == 0){
       print(root, 0);
+    }
+
+    else if (strcmp(input, "SEARCH") == 0){
+      int s;
+      cout << "What number do you want to search for? " << endl;
+      cin >> s;
+      cin.ignore();
+      search(root, s);
     }
   }
 
@@ -208,3 +217,24 @@ void fixTree(rbnode* &r, rbnode* node)
   r->color = 'B';
 
 }
+
+void search(rbnode* &root, int num)
+{
+  if (root == NULL) {
+    cout << "Number not found." << endl;
+    return;
+  }
+
+  if (root->data == num){
+    cout << "Number found: " << num << " is in the tree." << endl;
+    return;
+  }
+
+  if (num < root->data){
+    search(root->left, num);
+  }
+  else{
+    search(root->right, num);
+  }
+}
+
