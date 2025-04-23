@@ -23,6 +23,7 @@ void fixTree(rbnode* &r, rbnode* node);
 void leftRotate(rbnode* &root, rbnode* n);
 void rightRotate(rbnode* &root, rbnode* n);
 void search(rbnode* &root, int num);
+void transplant(rbnode* p, rbnode* c, rbnode* &root);
 
 int main()
 {
@@ -65,6 +66,14 @@ int main()
       cin >> s;
       cin.ignore();
       search(root, s);
+    }
+
+    else if (strcmp(input, "DELETE") == 0){
+      int d;
+      cout << "What number do you want to delete? ";
+      cin >> d;
+      cin.ignore();
+      
     }
   }
 
@@ -137,7 +146,7 @@ void leftRotate(rbnode* &root, rbnode* x)
 
 void rightRotate(rbnode* &root, rbnode* y)
 {
-  //get left child (will beocme new parent)
+  //get left child (will become new parent)
   rbnode* x = y->left;
   //x right subtree becomes y's left
   y->left = x->right;
@@ -208,7 +217,7 @@ void fixTree(rbnode* &r, rbnode* node)
 
 	node->parent->color = 'B';
 	node->parent->parent->color = 'R';
-	leftRotate(r, node->parent->parent); // left rotate grandparent to balance
+  	leftRotate(r, node->parent->parent); // left rotate grandparent to balance
       }
     }
     
@@ -217,6 +226,23 @@ void fixTree(rbnode* &r, rbnode* node)
   r->color = 'B';
 
 }
+
+void transplant(rbnode* p, rbnode* c, rbnode* &root)
+{
+  if (p->parent == NULL){
+    root = c;
+  }
+  else if (p == p->parent->left){
+    p->parent->left = c;
+  }
+  else{
+    p->parent->right = c;
+  }
+
+  c->parent = p->parent;
+}
+
+void deleteFix(
 
 void search(rbnode* &root, int num)
 {
