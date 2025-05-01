@@ -24,6 +24,7 @@ void leftRotate(rbnode* &root, rbnode* n);
 void rightRotate(rbnode* &root, rbnode* n);
 void search(rbnode* &root, int num);
 void transplant(rbnode* p, rbnode* c, rbnode* &root);
+void DELETE(rbnode* & root, int d, rbnode* r);
 
 int main()
 {
@@ -31,7 +32,7 @@ int main()
   rbnode* root = NULL;
   char input[10];
   while (strcmp(input, "QUIT") != 0){
-    cout << "ADD, PRINT, SEARCH, or QUIT: ";
+    cout << "ADD, PRINT, SEARCH, DELETE or QUIT: ";
     cin.get(input,10);
     cin.get();
     if (strcmp(input, "ADD") == 0){
@@ -73,7 +74,7 @@ int main()
       cout << "What number do you want to delete? ";
       cin >> d;
       cin.ignore();
-      
+      DELETE(root, d, root);
     }
   }
 
@@ -242,7 +243,7 @@ void transplant(rbnode* p, rbnode* c, rbnode* &root)
   c->parent = p->parent;
 }
 
-void deleteFix(
+//void deleteFix(
 
 void search(rbnode* &root, int num)
 {
@@ -264,3 +265,30 @@ void search(rbnode* &root, int num)
   }
 }
 
+void DELETE (rbnode* & root, int d, rbnode* r){
+  if (root == NULL){
+    cout << "Number Not found." << endl;
+    return;
+  }
+  if (root->data == d){
+    cout << "TEST" << endl;
+    if (root->left != NULL && root->right == NULL){
+      cout << "test" << endl;
+      transplant(root, root->left, r);
+    }
+    if (root->right != NULL && root->right == NULL){
+      cout << "test" << endl;
+      transplant(root, root->right, r);
+    }
+  }
+  if (d < root->data){
+    cout << "t" << endl;
+    DELETE(root->left, d, r);
+  }
+  /*
+  else{
+    DELETE(root->right, d, r);
+  }
+  */
+  
+}
