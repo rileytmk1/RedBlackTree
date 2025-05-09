@@ -243,7 +243,6 @@ void transplant(rbnode* p, rbnode* c, rbnode* &root)
   c->parent = p->parent;
 }
 
-//void deleteFix(
 
 void search(rbnode* &root, int num)
 {
@@ -266,29 +265,60 @@ void search(rbnode* &root, int num)
 }
 
 void DELETE (rbnode* & root, int d, rbnode* r){
+  char ogColor;
   if (root == NULL){
     cout << "Number Not found." << endl;
     return;
   }
   if (root->data == d){
     cout << "TEST" << endl;
+    ogColor = root->color;
     if (root->left != NULL && root->right == NULL){
       cout << "test" << endl;
       transplant(root, root->left, r);
     }
-    if (root->right != NULL && root->right == NULL){
+    else if (root->right != NULL && root->left == NULL){
       cout << "test" << endl;
       transplant(root, root->right, r);
     }
+    else if (root->right == NULL && root->left == NULL){
+      rbnode* p = root->parent;
+      if (root == p->left){
+	p->left = NULL;
+      }
+      else{
+	p->right = NULL;
+      }
+    }
+    
+    else if (root->right != NULL && root->left != NULL){
+      rbnode* successor = root->right;
+      while (successor->left != NULL){
+	successor = successor->left;
+      }
+      successor->parent->left = successor->right;
+      successor->right->parent = successor->parent;
+      successor->parent = successor->parent->parent;
+      successor->parent->right = successor;
+      transplant(successor->parent, successor, r);
+    }
+    if (ogColor == 'B'){
+      deleteFix(root);
+    }
   }
-  if (d < root->data){
+  else if (d < root->data){
     cout << "t" << endl;
     DELETE(root->left, d, r);
   }
-  /*
+
   else{
     DELETE(root->right, d, r);
   }
-  */
+  
+  
+}
+
+void deleteFix()
+{
   
 }
