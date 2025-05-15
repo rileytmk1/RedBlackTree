@@ -239,8 +239,10 @@ void transplant(rbnode* p, rbnode* c, rbnode* &root)
   else{
     p->parent->right = c;
   }
-
-  c->parent = p->parent;
+  if (c != NULL){
+    c->parent = p->parent;
+  }
+  
 }
 
 
@@ -273,38 +275,47 @@ void DELETE (rbnode* & root, int d, rbnode* r){
   if (root->data == d){
     cout << "TEST" << endl;
     ogColor = root->color;
-    if (root->left != NULL && root->right == NULL){
-      cout << "test" << endl;
-      transplant(root, root->left, r);
-    }
-    else if (root->right != NULL && root->left == NULL){
+    if (root->left == NULL){
       cout << "test" << endl;
       transplant(root, root->right, r);
     }
-    else if (root->right == NULL && root->left == NULL){
-      rbnode* p = root->parent;
-      if (root == p->left){
-	p->left = NULL;
-      }
-      else{
-	p->right = NULL;
-      }
+    else if (root->right == NULL){
+      cout << "test" << endl;
+      transplant(root, root->left, r);
     }
-    
-    else if (root->right != NULL && root->left != NULL){
+    else if (root->left != NULL && root->right != NULL) {
+      cout << "skibidi toilet" << endl;
+      
       rbnode* successor = root->right;
       while (successor->left != NULL){
 	successor = successor->left;
       }
-      successor->parent->left = successor->right;
-      successor->right->parent = successor->parent;
-      successor->parent = successor->parent->parent;
-      successor->parent->right = successor;
-      transplant(successor->parent, successor, r);
+      ogColor = successor->color;
+      rbnode* x = successor->right;
+
+      rbnode* ogLeft = root->left;
+      if (successor != root->right){
+	transplant(successor, successor->right, r);
+	successor->right = root->right;
+	successor->right->parent = successor;
+      }
+
+      else {
+	if (x != NULL){
+	  x->parent = successor;
+	}
+      }
+      
+
+      transplant(root, successor, r);
+      successor->left = ogLeft;
+      if (successor->left != NULL){
+	successor->left->parent = successor;
+      }
+      successor->color = root->color;
+      root = successor;
     }
-    if (ogColor == 'B'){
-      deleteFix(root);
-    }
+
   }
   else if (d < root->data){
     cout << "t" << endl;
