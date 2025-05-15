@@ -25,6 +25,7 @@ void rightRotate(rbnode* &root, rbnode* n);
 void search(rbnode* &root, int num);
 void transplant(rbnode* p, rbnode* c, rbnode* &root);
 void DELETE(rbnode* & root, int d, rbnode* r);
+void deleteFix(rbnode* x, rbnode* r);
 
 int main()
 {
@@ -273,25 +274,27 @@ void DELETE (rbnode* & root, int d, rbnode* r){
     return;
   }
   if (root->data == d){
+    rbnode* x;
     cout << "TEST" << endl;
     ogColor = root->color;
     if (root->left == NULL){
       cout << "test" << endl;
+      x = root->right;
       transplant(root, root->right, r);
     }
     else if (root->right == NULL){
       cout << "test" << endl;
+      x = root->left;
       transplant(root, root->left, r);
     }
-    else if (root->left != NULL && root->right != NULL) {
-      cout << "skibidi toilet" << endl;
+    else {
       
       rbnode* successor = root->right;
       while (successor->left != NULL){
 	successor = successor->left;
       }
       ogColor = successor->color;
-      rbnode* x = successor->right;
+      x = successor->right;
 
       rbnode* ogLeft = root->left;
       if (successor != root->right){
@@ -316,6 +319,11 @@ void DELETE (rbnode* & root, int d, rbnode* r){
       root = successor;
     }
 
+    if (ogColor == 'B'){
+      cout << "?" << endl;
+      deleteFix(x, r);
+    }
+    
   }
   else if (d < root->data){
     cout << "t" << endl;
@@ -329,7 +337,67 @@ void DELETE (rbnode* & root, int d, rbnode* r){
   
 }
 
-void deleteFix()
+void deleteFix(rbnode* x, rbnode* r)
 {
+  
+  while (x != r && x->color == 'B'){
+    if (x == x->parent->left){
+      rbnode* sibling = x->parent->right;
+      if(sibling->color == 'R'){
+	sibling->color = 'B';
+	x->parent->color = 'R';
+	leftRotate(r, x);
+	sibling = x->parent->right;
+      }
+    
+      if (sibling->left->color == 'B' && sibling->right->color == 'B'){
+	sibling->color = 'R';
+	x = x->parent;
+            
+      }
+      else{
+	if (sibling->right->color == 'B'){
+	  sibling->left->color = 'B';
+	  sibling->color = 'R';
+	  rightRotate(r, sibling);
+	  sibling = x->parent->right;
+	}
+	sibling->color = x->parent->color;
+	x->parent->color = 'B';
+	sibling->right->color = 'B';
+	leftRotate(r, x->parent);
+	r = x;
+      
+      }
+    }
+    else{
+      rbnode* sibling = x->parent->left;
+      if (sibling->color = 'R'){
+	sibling->color = 'B';
+	x->parent->color = 'R';
+	rightRotate(r, x);
+	sibling = x->parent->left;
+      }
+
+      if (sibling->right->color == 'B' && sibling->left->color == 'B'){
+	sibling->color = 'R';
+	x = x->parent;
+      }
+      else{
+	if (sibling->left->color == 'B'){
+	  sibling->right->color = 'B';
+	  sibling->color = 'R';
+	  leftRotate(r, sibling);
+	  sibling = x->parent->left;
+	}
+	sibling->color = x->parent->color;
+	x->parent->color = 'B';
+	rightRotate(r, x->parent);
+	r = x;
+      }
+    }
+     
+  }
+  x->color = 'B';
   
 }
