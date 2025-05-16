@@ -24,8 +24,8 @@ void leftRotate(rbnode* &root, rbnode* n);
 void rightRotate(rbnode* &root, rbnode* n);
 void search(rbnode* &root, int num);
 void transplant(rbnode* p, rbnode* c, rbnode* &root);
-void DELETE(rbnode* & root, int d, rbnode* r);
-void deleteFix(rbnode* x, rbnode* r);
+void DELETE(rbnode* & root, int d, rbnode* &r);
+void deleteFix(rbnode* x, rbnode* &r);
 
 int main()
 {
@@ -267,16 +267,17 @@ void search(rbnode* &root, int num)
   }
 }
 
-void DELETE (rbnode* & root, int d, rbnode* r){
-  char ogColor;
+void DELETE (rbnode* & root, int d, rbnode* &r){
   if (root == NULL){
     cout << "Number Not found." << endl;
     return;
   }
   if (root->data == d){
-    rbnode* x;
-    cout << "TEST" << endl;
-    ogColor = root->color;
+    rbnode* x = NULL;
+    rbnode* y = root;
+    
+    
+    char ogColor = y->color;
     if (root->left == NULL){
       cout << "test" << endl;
       x = root->right;
@@ -288,35 +289,38 @@ void DELETE (rbnode* & root, int d, rbnode* r){
       transplant(root, root->left, r);
     }
     else {
-      
-      rbnode* successor = root->right;
-      while (successor->left != NULL){
-	successor = successor->left;
-      }
-      ogColor = successor->color;
-      x = successor->right;
-
       rbnode* ogLeft = root->left;
-      if (successor != root->right){
-	transplant(successor, successor->right, r);
-	successor->right = root->right;
-	successor->right->parent = successor;
+      char saveColor = root->color;
+      y = root->right;
+      while (y->left != NULL){
+	y = y->left;
       }
-
-      else {
-	if (x != NULL){
-	  x->parent = successor;
+      
+      ogColor = y->color;
+      x = y->right;
+      
+      if (y->parent != root){
+	transplant(y, y->right, r);
+	y->right = root->right;
+	if (y->right != NULL){
+	  y->right->parent = y;
 	}
       }
+      /*
+      else {
+	if (x != NULL){
+	  x->parent = y;
+	}
+      }
+      */
       
 
-      transplant(root, successor, r);
-      successor->left = ogLeft;
-      if (successor->left != NULL){
-	successor->left->parent = successor;
+      transplant(root, y, r);
+      y->left = ogLeft;
+      if (y->left != NULL){
+	y->left->parent = y;
       }
-      successor->color = root->color;
-      root = successor;
+      y->color = saveColor;
     }
 
     if (ogColor == 'B'){
@@ -337,67 +341,102 @@ void DELETE (rbnode* & root, int d, rbnode* r){
   
 }
 
-void deleteFix(rbnode* x, rbnode* r)
+void deleteFix(rbnode* x, rbnode* &r)
 {
   
-  while (x != r && x->color == 'B'){
+  while (x != r && (x != NULL && x->color == 'B')){
     if (x == x->parent->left){
+      /*
+      if (x == NULL || x->parent == NULL){
+	break;
+      }
+      */
       rbnode* sibling = x->parent->right;
+      if (sibling == NULL){
+	break;
+      }
+      
       if(sibling->color == 'R'){
 	sibling->color = 'B';
 	x->parent->color = 'R';
-	leftRotate(r, x);
+	leftRotate(r, x->parent);
 	sibling = x->parent->right;
+	if (sibling == NULL){
+	  break;
+	}
       }
     
-      if (sibling->left->color == 'B' && sibling->right->color == 'B'){
+      if ((sibling->left == NULL || sibling->left->color == 'B') && (sibling->right == NULL || sibling->right->color == 'B')){
 	sibling->color = 'R';
 	x = x->parent;
             
       }
       else{
-	if (sibling->right->color == 'B'){
-	  sibling->left->color = 'B';
+	if (sibling->right == NULL || sibling->right->color == 'B'){
+	  if (sibling->left != NULL){
+	    sibling->left->color = 'B';
+	  }
 	  sibling->color = 'R';
 	  rightRotate(r, sibling);
 	  sibling = x->parent->right;
+	  if (sibling == NULL){
+	    break;
+	  }
 	}
 	sibling->color = x->parent->color;
 	x->parent->color = 'B';
-	sibling->right->color = 'B';
+	if (sibling->right != NULL){
+	  sibling->right->color = 'B';
+	}
 	leftRotate(r, x->parent);
-	r = x;
+	x = r;
       
       }
     }
     else{
       rbnode* sibling = x->parent->left;
-      if (sibling->color = 'R'){
+      if (sibling == NULL){
+	break;
+      }
+      
+      if (sibling->color == 'R'){
 	sibling->color = 'B';
 	x->parent->color = 'R';
-	rightRotate(r, x);
+	rightRotate(r, x->parent);
 	sibling = x->parent->left;
+	if (sibling == NULL){
+	  break;
+	}
       }
 
-      if (sibling->right->color == 'B' && sibling->left->color == 'B'){
+      if ((sibling->right == NULL || sibling->right->color == 'B') && (sibling->left == NULL || sibling->left->color == 'B')){
 	sibling->color = 'R';
 	x = x->parent;
       }
       else{
-	if (sibling->left->color == 'B'){
-	  sibling->right->color = 'B';
+	if (sibling->left == NULL || sibling->left->color == 'B'){
+	  if (sibling->right != NULL){
+	    sibling->right->color = 'B';
+	  }
 	  sibling->color = 'R';
 	  leftRotate(r, sibling);
 	  sibling = x->parent->left;
+	  if (sibling == NULL){
+	    break;
+	  }
 	}
 	sibling->color = x->parent->color;
 	x->parent->color = 'B';
+	if (sibling->left != NULL){
+	  sibling->left->color = 'B';
+	}
 	rightRotate(r, x->parent);
-	r = x;
+	x = r;
       }
     }
      
   }
-  x->color = 'B';
-  
+  if (x != NULL){
+    x->color = 'B';
+  }
 }
