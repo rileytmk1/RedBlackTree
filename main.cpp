@@ -16,6 +16,8 @@ struct rbnode{
 // fix and rotate functions created with help of psuedo code from https://www.youtube.com/playlist?list=PL9xmBV_5YoZNqDI8qfOZgzbqahCUmUEin
 // and https://www.youtube.com/watch?v=5IBxA-bZZH8&list=PL9xmBV_5YoZNqDI8qfOZgzbqahCUmUEin&index=3 (from resources listed on canvas)
 
+// credit for delete and deleteFix functions to Michael Sambol's youtube playlist on redblack tree. (same playlist as above). Edited to deal with NULLs.
+
 //function prototypes
 void add(rbnode* &root, rbnode* &r, rbnode* parent, int value);
 void print(rbnode* &root, int depth);
@@ -25,7 +27,7 @@ void rightRotate(rbnode* &root, rbnode* n);
 void search(rbnode* &root, int num);
 void transplant(rbnode* p, rbnode* c, rbnode* &root);
 void DELETE(rbnode* & root, int d, rbnode* &r);
-void deleteFix(rbnode* x, rbnode* &r);
+void deleteFix(rbnode* x, rbnode* xParent, rbnode* &r); 
 
 int main()
 {
@@ -249,91 +251,124 @@ void transplant(rbnode* p, rbnode* c, rbnode* &root)
 
 void search(rbnode* &root, int num)
 {
+  // gone through tree and number was not found
   if (root == NULL) {
     cout << "Number not found." << endl;
     return;
   }
 
+  //current node equal to number searched
   if (root->data == num){
     cout << "Number found: " << num << " is in the tree." << endl;
     return;
   }
 
+  //search left subtree
   if (num < root->data){
     search(root->left, num);
   }
+  //search right
   else{
     search(root->right, num);
   }
 }
 
 void DELETE (rbnode* & root, int d, rbnode* &r){
+  // gone through tree and node is not found
   if (root == NULL){
     cout << "Number Not found." << endl;
     return;
   }
+  //found node to delete
   if (root->data == d){
-    rbnode* x = NULL;
-    rbnode* y = root;
+    rbnode* x = NULL; //replacement node
+    rbnode* y = root; //node to be deleted
     
     
-    char ogColor = y->color;
+    char ogColor = y->color; //save color before transplants mess things around
+
+    // Case: 1 only right child or no children
     if (root->left == NULL){
-      cout << "test" << endl;
       x = root->right;
-      transplant(root, root->right, r);
+      transplant(root, root->right, r); // move right child into place of deleted node
     }
+
+    // Case: 2 only left child
     else if (root->right == NULL){
-      cout << "test" << endl;
       x = root->left;
-      transplant(root, root->left, r);
+      transplant(root, root->left, r); //move left child into place of deleted node
     }
+
+    // Case: 3 has 2 children
     else {
+      // save left subtree and color before transplants mess thins around.
       rbnode* ogLeft = root->left;
-      char saveColor = root->color;
+      ogColor = root->color;
+
+      //find the inorder successor
       y = root->right;
       while (y->left != NULL){
 	y = y->left;
       }
       
-      ogColor = y->color;
-      x = y->right;
-      
+      char successorColor = y->color;
+      x = y->right; // successor's right child
+
+      // x's parent if x exists
+      if (x != NULL){
+	x->parent = y->parent;
+      }
+
+      // successor is not direct right child of current node
       if (y->parent != root){
-	transplant(y, y->right, r);
+	transplant(y, y->right, r); // move successor's right child into successor's place 
 	y->right = root->right;
 	if (y->right != NULL){
 	  y->right->parent = y;
 	}
       }
-      /*
+
       else {
+	//if successor is direct right child, update parent
 	if (x != NULL){
 	  x->parent = y;
 	}
       }
-      */
       
-
+      
+      // move successor into deleted node's position
       transplant(root, y, r);
+
+      //reattatch left subtree
       y->left = ogLeft;
       if (y->left != NULL){
 	y->left->parent = y;
       }
-      y->color = saveColor;
-    }
+      y->color = ogColor;
 
+      ogColor = successorColor;
+    }
+    
+    // fix tree if original color is black
     if (ogColor == 'B'){
-      cout << "?" << endl;
-      deleteFix(x, r);
+      cout << "fixed called" << endl;
+      rbnode* xParent = NULL;
+      if (x != NULL){
+	xParent = x->parent;
+      }
+      else{
+	xParent = y->parent; //in case x is NULL
+      }
+      deleteFix(x, xParent, r);
     }
     
   }
+  // search left if value is less than current node
   else if (d < root->data){
-    cout << "t" << endl;
     DELETE(root->left, d, r);
   }
 
+  // search right otherwise
   else{
     DELETE(root->right, d, r);
   }
@@ -341,77 +376,95 @@ void DELETE (rbnode* & root, int d, rbnode* &r){
   
 }
 
-void deleteFix(rbnode* x, rbnode* &r)
+//fixes tree to maintain red black properties
+void deleteFix(rbnode* x, rbnode* xParent, rbnode* &r)
 {
-  
-  while (x != r && (x != NULL && x->color == 'B')){
-    if (x == x->parent->left){
-      /*
-      if (x == NULL || x->parent == NULL){
-	break;
-      }
-      */
-      rbnode* sibling = x->parent->right;
-      if (sibling == NULL){
-	break;
-      }
-      
-      if(sibling->color == 'R'){
-	sibling->color = 'B';
-	x->parent->color = 'R';
-	leftRotate(r, x->parent);
-	sibling = x->parent->right;
-	if (sibling == NULL){
-	  break;
-	}
-      }
+  //fix until x is root or x is red
+  while (x != r && (x == NULL || x->color == 'B')){
+    rbnode* parent = NULL;
+
+    // in case x is NULL
+    if (x != NULL){
+      parent = x->parent;
+    }
+    else{
+      parent = xParent;
+    }
     
-      if ((sibling->left == NULL || sibling->left->color == 'B') && (sibling->right == NULL || sibling->right->color == 'B')){
-	sibling->color = 'R';
-	x = x->parent;
+
+    if (parent == NULL){
+      break;
+    }
+
+    // if x is a left child
+    if (x == parent->left){
+      rbnode* sibling = parent->right;
+
+      //Case: 1 sibling is red
+      if(sibling != NULL && sibling->color == 'R'){
+	// make sibling black and parent red
+	sibling->color = 'B';
+	parent->color = 'R';
+	// rotate around parent
+	leftRotate(r, parent);
+	// get new sibling
+	sibling = parent->right;
+	
+      }
+      // Case 2: sibling and both children are black or NULL
+      if ((sibling == NULL) || ((sibling->left == NULL || sibling->left->color == 'B') && (sibling->right == NULL || sibling->right->color == 'B'))){
+	if (sibling != NULL){
+	  sibling->color = 'R'; //sibling becomes red
+	}
+	// move to parent and continue fixing tree
+	x = parent;
+	xParent = x->parent;
             
       }
+      // Case 3/4: sibling has at least one red child
       else{
+	//Case 3: sibling's right is black, left is red
 	if (sibling->right == NULL || sibling->right->color == 'B'){
 	  if (sibling->left != NULL){
-	    sibling->left->color = 'B';
+	    sibling->left->color = 'B'; //left child becomes black
 	  }
-	  sibling->color = 'R';
-	  rightRotate(r, sibling);
-	  sibling = x->parent->right;
-	  if (sibling == NULL){
-	    break;
+	  sibling->color = 'R'; //sibling becomes red
+	  rightRotate(r, sibling); //rotate around sibling
+	  sibling = parent->right; // get new sibling after rotation
+	
+	}
+	// Case 4: sibling's right is red
+	if (sibling != NULL){
+	  sibling->color = parent->color;
+	  parent->color = 'B';
+	  if (sibling->right != NULL){
+	    sibling->right->color = 'B';
 	  }
+	  leftRotate(r, parent);
 	}
-	sibling->color = x->parent->color;
-	x->parent->color = 'B';
-	if (sibling->right != NULL){
-	  sibling->right->color = 'B';
-	}
-	leftRotate(r, x->parent);
+	//end loop after case 4
 	x = r;
+	xParent = NULL;
       
       }
     }
-    else{
-      rbnode* sibling = x->parent->left;
-      if (sibling == NULL){
-	break;
-      }
-      
-      if (sibling->color == 'R'){
+    else{ // x is a right child. Cases are just flipped for the other side
+      rbnode* sibling = parent->left;
+            
+      if (sibling != NULL && sibling->color == 'R'){
 	sibling->color = 'B';
-	x->parent->color = 'R';
-	rightRotate(r, x->parent);
-	sibling = x->parent->left;
-	if (sibling == NULL){
-	  break;
-	}
+	parent->color = 'R';
+	rightRotate(r, parent);
+	sibling = parent->left;
+	
       }
 
-      if ((sibling->right == NULL || sibling->right->color == 'B') && (sibling->left == NULL || sibling->left->color == 'B')){
-	sibling->color = 'R';
-	x = x->parent;
+      if ((sibling == NULL) || ((sibling->right == NULL || sibling->right->color == 'B') && (sibling->left == NULL || sibling->left->color == 'B'))){
+	if (sibling != NULL){
+	  sibling->color = 'R';
+	}
+	x = parent;
+	xParent = x->parent;
       }
       else{
 	if (sibling->left == NULL || sibling->left->color == 'B'){
@@ -420,22 +473,25 @@ void deleteFix(rbnode* x, rbnode* &r)
 	  }
 	  sibling->color = 'R';
 	  leftRotate(r, sibling);
-	  sibling = x->parent->left;
-	  if (sibling == NULL){
-	    break;
+	  sibling = parent->left;
+	  
+	}
+	if (sibling != NULL){
+	  sibling->color = parent->color;
+	  parent->color = 'B';
+	  if (sibling->left != NULL){
+	    sibling->left->color = 'B';
 	  }
+	  rightRotate(r, parent);
 	}
-	sibling->color = x->parent->color;
-	x->parent->color = 'B';
-	if (sibling->left != NULL){
-	  sibling->left->color = 'B';
-	}
-	rightRotate(r, x->parent);
 	x = r;
+	xParent = NULL;
       }
     }
+    
      
   }
+  // Make sure x is black when everything is finished
   if (x != NULL){
     x->color = 'B';
   }
