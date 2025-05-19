@@ -97,6 +97,7 @@ void add(rbnode* &root, rbnode* &r, rbnode* parent, int value)
     return;
   }
   else{
+    
     parent = root; //keep track of parent
     if (value < root->data){ //go down left subtree if less than current node
       add(root->left, r, parent, value);
@@ -306,6 +307,7 @@ void DELETE (rbnode* & root, int d, rbnode* &r){
       ogColor = root->color;
 
       //find the inorder successor
+
       y = root->right;
       while (y->left != NULL){
 	y = y->left;
@@ -318,7 +320,8 @@ void DELETE (rbnode* & root, int d, rbnode* &r){
       if (x != NULL){
 	x->parent = y->parent;
       }
-
+      
+      
       // successor is not direct right child of current node
       if (y->parent != root){
 	transplant(y, y->right, r); // move successor's right child into successor's place 
@@ -330,6 +333,7 @@ void DELETE (rbnode* & root, int d, rbnode* &r){
 
       else {
 	//if successor is direct right child, update parent
+	//x = y->right;
 	if (x != NULL){
 	  x->parent = y;
 	}
@@ -357,7 +361,13 @@ void DELETE (rbnode* & root, int d, rbnode* &r){
 	xParent = x->parent;
       }
       else{
-	xParent = y->parent; //in case x is NULL
+	
+	if (y->left == NULL && y->right == NULL){ // Leaf case 
+	  xParent = y->parent;
+	}
+	else{
+	  xParent = y;
+	}
       }
       deleteFix(x, xParent, r);
     }
@@ -379,8 +389,10 @@ void DELETE (rbnode* & root, int d, rbnode* &r){
 //fixes tree to maintain red black properties
 void deleteFix(rbnode* x, rbnode* xParent, rbnode* &r)
 {
+
   //fix until x is root or x is red
   while (x != r && (x == NULL || x->color == 'B')){
+
     rbnode* parent = NULL;
 
     // in case x is NULL
@@ -402,6 +414,7 @@ void deleteFix(rbnode* x, rbnode* xParent, rbnode* &r)
 
       //Case: 1 sibling is red
       if(sibling != NULL && sibling->color == 'R'){
+	cout << "CASE 1" << endl;
 	// make sibling black and parent red
 	sibling->color = 'B';
 	parent->color = 'R';
@@ -413,18 +426,21 @@ void deleteFix(rbnode* x, rbnode* xParent, rbnode* &r)
       }
       // Case 2: sibling and both children are black or NULL
       if ((sibling == NULL) || ((sibling->left == NULL || sibling->left->color == 'B') && (sibling->right == NULL || sibling->right->color == 'B'))){
+	cout << "CASE 2" << endl;
 	if (sibling != NULL){
 	  sibling->color = 'R'; //sibling becomes red
 	}
 	// move to parent and continue fixing tree
+	
 	x = parent;
-	xParent = x->parent;
-            
+	xParent = parent->parent;
+     
       }
       // Case 3/4: sibling has at least one red child
       else{
 	//Case 3: sibling's right is black, left is red
 	if (sibling->right == NULL || sibling->right->color == 'B'){
+	  cout << "CASE 3" << endl;
 	  if (sibling->left != NULL){
 	    sibling->left->color = 'B'; //left child becomes black
 	  }
@@ -435,6 +451,7 @@ void deleteFix(rbnode* x, rbnode* xParent, rbnode* &r)
 	}
 	// Case 4: sibling's right is red
 	if (sibling != NULL){
+	  cout << "CASE 4" << endl;
 	  sibling->color = parent->color;
 	  parent->color = 'B';
 	  if (sibling->right != NULL){
@@ -452,6 +469,7 @@ void deleteFix(rbnode* x, rbnode* xParent, rbnode* &r)
       rbnode* sibling = parent->left;
             
       if (sibling != NULL && sibling->color == 'R'){
+	cout << "case 1" << endl;
 	sibling->color = 'B';
 	parent->color = 'R';
 	rightRotate(r, parent);
@@ -460,14 +478,18 @@ void deleteFix(rbnode* x, rbnode* xParent, rbnode* &r)
       }
 
       if ((sibling == NULL) || ((sibling->right == NULL || sibling->right->color == 'B') && (sibling->left == NULL || sibling->left->color == 'B'))){
+	cout << "case 2" << endl;
 	if (sibling != NULL){
 	  sibling->color = 'R';
 	}
+	
 	x = parent;
 	xParent = x->parent;
+	
       }
       else{
 	if (sibling->left == NULL || sibling->left->color == 'B'){
+	  cout << "case 3" << endl;
 	  if (sibling->right != NULL){
 	    sibling->right->color = 'B';
 	  }
@@ -476,6 +498,7 @@ void deleteFix(rbnode* x, rbnode* xParent, rbnode* &r)
 	  sibling = parent->left;
 	  
 	}
+	cout << "case 4" << endl;
 	if (sibling != NULL){
 	  sibling->color = parent->color;
 	  parent->color = 'B';
